@@ -505,7 +505,7 @@
 
             const applyTheme = (theme) => {
                 htmlElement.setAttribute('data-bs-theme', theme);
-                themeSwitcher.innerHTML = theme === 'dark' ? moonIcon : sunIcon;
+                themeSwitcher.innerHTML = theme === 'dark' ? sunIcon : moonIcon;
                 localStorage.setItem('theme', theme);
             };
 
