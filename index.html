@@ -1,0 +1,803 @@
+<!DOCTYPE html>
+<html lang="es" data-bs-theme="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Conversor Imagen a Base64</title>
+
+    <!-- Bootstrap Icons CDN -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+
+    <!-- Embedded Styles -->
+    <style>
+        /* Import Base Bootstrap 5.3 - For production, consider linking or bundling */
+        @import url("https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css");
+
+        /* --- Custom Theme Variables & Overrides --- */
+        :root {
+            /* Dark Theme (Default) */
+            --custom-bg: #1a1d24;
+            --custom-text: #e1e1e1;
+            --custom-card-bg: #252932;
+            --custom-border-color: #3a3f4b;
+            --custom-primary: #00aaff; /* Brighter blue */
+            --custom-primary-hover: #0088cc;
+            --custom-secondary: #6c757d;
+            --custom-secondary-hover: #5a6268;
+            --custom-dropzone-bg: rgba(255, 255, 255, 0.03);
+            --custom-dropzone-border: #444953;
+            --custom-dropzone-hover-bg: rgba(0, 170, 255, 0.1);
+            --custom-dropzone-hover-border: var(--custom-primary);
+            --custom-code-bg: #2b3035;
+            --custom-code-text: #f1f1f1;
+            --custom-subtle-text: #adb5bd;
+            --custom-success-bg-subtle: rgba(25, 135, 84, 0.2);
+            --custom-danger-bg-subtle: rgba(220, 53, 69, 0.1);
+        }
+
+        html[data-bs-theme="light"] {
+            --custom-bg: #f8f9fa;
+            --custom-text: #212529;
+            --custom-card-bg: #ffffff;
+            --custom-border-color: #dee2e6;
+            /* --custom-primary: #007bff; */ /* Keep the same vibrant blue */
+            /* --custom-primary-hover: #0056b3; */
+            --custom-secondary: #6c757d;
+            --custom-secondary-hover: #5a6268;
+            --custom-dropzone-bg: rgba(0, 0, 0, 0.02);
+            --custom-dropzone-border: #ced4da;
+            --custom-dropzone-hover-bg: rgba(0, 170, 255, 0.05);
+            /* --custom-dropzone-hover-border: var(--custom-primary); */
+            --custom-code-bg: #e9ecef;
+            --custom-code-text: #343a40;
+            --custom-subtle-text: #6c757d;
+            --custom-success-bg-subtle: #d1e7dd;
+            --custom-danger-bg-subtle: #f8d7da;
+        }
+
+        /* --- Base Styles --- */
+        body {
+            background-color: var(--custom-bg);
+            color: var(--custom-text);
+            font-family: system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+            padding-top: 1.5rem;
+            padding-bottom: 3rem;
+            transition: background-color 0.3s ease, color 0.3s ease;
+        }
+
+        /* --- Header --- */
+        header {
+            border-bottom: 1px solid var(--custom-border-color);
+        }
+        #themeSwitcher {
+            cursor: pointer;
+            font-size: 1.6rem;
+            color: var(--custom-primary);
+            transition: color 0.2s ease;
+        }
+        #themeSwitcher:hover {
+            color: var(--custom-primary-hover);
+        }
+
+        /* --- Cards --- */
+        .card {
+            background-color: var(--custom-card-bg);
+            border: 1px solid var(--custom-border-color);
+            border-radius: .5rem; /* Softer corners */
+            transition: background-color 0.3s ease, border-color 0.3s ease;
+            margin-bottom: 1.5rem; /* Consistent spacing */
+        }
+         .card-header {
+             background-color: rgba(var(--bs-primary-rgb, 0, 170, 255), 0.1); /* Subtle primary header */
+             border-bottom: 1px solid var(--custom-border-color);
+             font-weight: 500;
+         }
+         /* Adjust Bootstrap variables directly if needed, e.g., for primary RGB */
+         html[data-bs-theme="dark"] { --bs-primary-rgb: 0,170,255; }
+         html[data-bs-theme="light"] { --bs-primary-rgb: 0,170,255; }
+
+
+        /* --- Dropzone --- */
+        #dropzone {
+            border: 2px dashed var(--custom-dropzone-border);
+            background-color: var(--custom-dropzone-bg);
+            background-image: url('data:image/svg+xml;charset=UTF-8,<svg xmlns="http://www.w3.org/2000/svg" width="60" height="60" fill="%23adb5bd" class="bi bi-cloud-arrow-up-fill" viewBox="0 0 16 16"><path d="M8 2a5.53 5.53 0 0 0-3.594 1.342c-.766.66-1.321 1.52-1.464 2.383C1.266 6.095 0 7.555 0 9.318 0 11.366 1.708 13 3.781 13h8.906C14.502 13 16 11.57 16 9.773c0-1.636-1.242-2.969-2.834-3.194C12.923 3.999 10.69 2 8 2m2.354 5.146a.5.5 0 0 1-.708.708L8.5 6.707V10.5a.5.5 0 0 1-1 0V6.707L6.354 7.854a.5.5 0 1 1-.708-.708l2-2a.5.5 0 0 1 .708 0z"/></svg>'); /* Embedded SVG icon */
+            background-size: 50px 50px;
+            background-repeat: no-repeat;
+            background-position: center 25%; /* Position icon slightly higher */
+            min-height: 180px; /* Increased height for better spacing */
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center; /* Center content vertically */
+            text-align: center;
+            padding: 1rem;
+            border-radius: .5rem;
+            transition: background-color 0.2s ease, border-color 0.2s ease, min-height 0.3s ease, padding 0.3s ease;
+            position: relative;
+            margin-bottom: 1.5rem; /* Space below dropzone */
+        }
+
+        #dropzone.drag-over {
+            border-style: solid;
+            border-color: var(--custom-primary);
+            background-color: var(--custom-dropzone-hover-bg);
+        }
+
+        /* The clickable content *inside* the dropzone */
+        .dropzone-content {
+            cursor: pointer;
+            color: var(--custom-subtle-text);
+            padding-top: 45px; /* Push text below the icon */
+            transition: color 0.2s ease;
+            /* Opacity/visibility managed by JS during loading */
+            opacity: 1;
+            visibility: visible;
+        }
+        #dropzone:not(.drag-over):hover .dropzone-content { /* Hover effect only when NOT dragging over */
+             color: var(--custom-primary);
+        }
+        #dropzone.drag-over .dropzone-content {
+             /* Keep subtle text color during drag-over as visual cue changes */
+             color: var(--custom-subtle-text);
+        }
+
+        /* Hide the default file input */
+        #fileInput {
+            width: 0.1px;
+            height: 0.1px;
+            opacity: 0;
+            overflow: hidden;
+            position: absolute;
+            z-index: -1;
+        }
+
+        /* --- MODIFICATION: Remove specific dropzone styles when image is loaded --- */
+        /* The dropzone should remain visually consistent */
+        /* We only hide the placeholder SVG icon when an image is loaded */
+        body.image-loaded #dropzone {
+             background-image: none;
+        }
+        /* The .dropzone-content visibility is handled by JS during loading state */
+
+
+        /* --- Image Preview & Details --- */
+         #imageDetails {
+            /* Appears below the dropzone */
+             margin-top: 0; /* Let dropzone margin-bottom handle spacing */
+         }
+        #imagePreviewContainer {
+            max-height: 300px;
+            overflow: hidden;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            background-color: var(--custom-dropzone-bg); /* Use same subtle bg */
+            border-radius: .3rem;
+            margin-bottom: 1rem;
+            border: 1px solid var(--custom-border-color);
+        }
+        #imagePreviewContainer img {
+            display: block;
+            max-width: 100%;
+            max-height: 300px;
+            object-fit: contain;
+        }
+        #fileInfo p {
+            margin-bottom: 0.5rem;
+            font-size: 0.9rem;
+            color: var(--custom-subtle-text);
+        }
+        #fileInfo strong {
+             min-width: 130px;
+             display: inline-block;
+             font-weight: 500;
+             color: var(--custom-text);
+        }
+
+        /* --- Output Section --- */
+        #outputCode {
+            font-family: 'SFMono-Regular', Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+            background-color: var(--custom-code-bg);
+            color: var(--custom-code-text);
+            border: 1px solid var(--custom-border-color);
+            border-radius: .3rem;
+            min-height: 180px;
+            word-break: break-all;
+            font-size: 0.85em;
+            transition: background-color 0.3s ease, color 0.3s ease, border-color 0.3s ease;
+        }
+        .form-check-label {
+            font-size: 0.95rem;
+        }
+        .form-label {
+             font-weight: 500;
+             margin-bottom: 0.75rem;
+        }
+
+
+        /* --- Buttons --- */
+        .btn {
+            border-radius: .3rem;
+            padding: .5rem 1rem;
+            font-size: 0.95rem;
+            transition: background-color 0.2s ease, border-color 0.2s ease, color 0.2s ease, box-shadow 0.2s ease;
+        }
+        .btn-primary {
+             background-color: var(--custom-primary);
+             border-color: var(--custom-primary);
+             color: #fff;
+        }
+        .btn-primary:hover {
+            background-color: var(--custom-primary-hover);
+            border-color: var(--custom-primary-hover);
+            box-shadow: 0 2px 5px rgba(0, 170, 255, 0.3);
+        }
+        .btn-secondary {
+             background-color: var(--custom-secondary);
+             border-color: var(--custom-secondary);
+             color: #fff;
+        }
+        .btn-secondary:hover {
+             background-color: var(--custom-secondary-hover);
+             border-color: var(--custom-secondary-hover);
+             box-shadow: 0 2px 5px rgba(108, 117, 125, 0.3);
+         }
+        .btn-danger {
+             background-color: #dc3545;
+             border-color: #dc3545;
+             color: #fff;
+        }
+         .btn-danger:hover {
+             background-color: #c82333;
+             border-color: #bd2130;
+             box-shadow: 0 2px 5px rgba(220, 53, 69, 0.3);
+         }
+         .btn-success { /* Added for copy feedback */
+            background-color: #198754;
+            border-color: #198754;
+            color: #fff;
+         }
+         .btn-success:hover {
+            background-color: #157347;
+            border-color: #146c43;
+         }
+        .btn .icon-label {
+            margin-left: 0.5em;
+        }
+         .btn i {
+             vertical-align: text-bottom; /* Align icon better with text */
+         }
+
+        /* --- Alerts & Loading --- */
+        .alert {
+             border-radius: .3rem;
+             margin-top: 1rem; /* Space above alerts */
+         }
+         .alert-danger {
+             background-color: var(--custom-danger-bg-subtle);
+             color: #dc3545;
+             border-color: rgba(220, 53, 69, 0.3);
+         }
+         #loadingSpinner {
+             margin-top: 1rem; /* Space above spinner */
+         }
+         #loadingSpinner p {
+             color: var(--custom-subtle-text);
+             margin-top: 0.5rem;
+         }
+
+
+        /* --- Footer --- */
+        footer {
+            color: var(--custom-subtle-text);
+            font-size: 0.9rem;
+            margin-top: 3rem;
+            padding-top: 1.5rem;
+            border-top: 1px solid var(--custom-border-color);
+        }
+
+        /* Ensure card takes available height */
+         .card.h-100 {
+             display: flex;
+             flex-direction: column;
+         }
+         .card.h-100 .card-body {
+             flex-grow: 1; /* Allow body to take space */
+             display: flex; /* Make card-body a flex container too */
+             flex-direction: column; /* Stack elements vertically */
+         }
+
+         /* Placeholder visibility control */
+         #inputPlaceholder {
+             /* Controlled by JS */
+             margin-top: 1.5rem; /* Space when visible */
+             text-align: center;
+             color: var(--custom-subtle-text);
+         }
+         /* Hide input placeholder if loading or image loaded */
+         body.image-loaded #inputPlaceholder,
+         body.is-loading #inputPlaceholder {
+             display: none;
+         }
+         #outputPlaceholder {
+            /* Style output placeholder */
+            min-height: 300px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: var(--custom-subtle-text);
+            text-align: center;
+            flex-grow: 1; /* Take available space */
+         }
+
+
+    </style>
+</head>
+<body> <!-- No initial classes needed here -->
+    <div class="container">
+        <header class="d-flex justify-content-between align-items-center mb-4 pb-3">
+            <h1 class="h4 mb-0">Conversor Imagen a Base64</h1>
+            <div id="themeSwitcher" title="Cambiar tema">
+                <i class="bi bi-moon-stars-fill"></i>
+                <!-- Sun icon will be swapped here via JS -->
+            </div>
+        </header>
+
+        <main>
+            <div class="row g-4">
+                <!-- Input Column -->
+                <div class="col-lg-6 d-flex">
+                    <div class="card h-100 w-100">
+                        <div class="card-header">1. Subir Imagen</div>
+                        <div class="card-body">
+
+                            <input type="file" id="fileInput" accept="image/png, image/jpeg, image/gif, image/svg+xml, image/webp">
+
+                            <!-- Dropzone Area - Always present, retains appearance -->
+                            <div id="dropzone">
+                                <!-- Clickable Label Content -->
+                                <label for="fileInput" class="dropzone-content">
+                                    <!-- Icon now handled by CSS background -->
+                                    Arrastra una imagen aquí<br>o haz clic para seleccionar
+                                </label>
+                            </div>
+
+                            <!-- Loading Spinner -->
+                            <div id="loadingSpinner" class="text-center" style="display: none;">
+                                <div class="spinner-border text-primary" role="status">
+                                    <span class="visually-hidden">Procesando...</span>
+                                </div>
+                                <p>Procesando imagen...</p>
+                            </div>
+
+                            <!-- Error Alert -->
+                            <div id="errorAlert" class="alert alert-danger" role="alert" style="display: none;">
+                                <i class="bi bi-exclamation-triangle-fill me-2"></i> Error: <span id="errorMessage"></span>
+                            </div>
+
+                            <!-- Image Details Section (Appears below dropzone when loaded) -->
+                            <div id="imageDetails" style="display: none;">
+                                <div id="imagePreviewContainer" class="mb-3">
+                                    <img id="imagePreview" alt="Vista previa de la imagen cargada">
+                                </div>
+                                <h3 class="h6 mb-2">Detalles de la Imagen Actual</h3>
+                                <div id="fileInfo" class="bg-body-tertiary p-3 rounded border">
+                                    <p><strong>Nombre:</strong> <span id="fileName"></span></p>
+                                    <p><strong>Tipo MIME:</strong> <span id="fileType"></span></p>
+                                    <p><strong>Tamaño Original:</strong> <span id="fileSize"></span></p>
+                                    <p><strong>Dimensiones:</strong> <span id="fileDimensions"></span></p>
+                                    <p><strong>Tamaño Base64:</strong> <span id="base64Size"></span></p>
+                                </div>
+                            </div>
+
+                            <!-- Placeholder for initial state (when no image loaded) -->
+                            <div id="inputPlaceholder" class="mt-auto">
+                                <small>Sube una imagen para ver sus detalles y generar el código.</small>
+                            </div>
+
+                        </div> <!-- End card-body -->
+                    </div> <!-- End card -->
+                </div> <!-- End Input Column -->
+
+                <!-- Output Column -->
+                <div class="col-lg-6 d-flex">
+                    <div class="card h-100 w-100">
+                         <div class="card-header">2. Código Generado</div>
+                         <div class="card-body">
+                             <!-- Output Section (Shown when image loaded) -->
+                            <div id="outputSection" class="d-flex flex-column h-100" style="display: none;">
+
+                                <div class="mb-3">
+                                    <label class="form-label">Formato de Salida:</label>
+                                    <div class="form-check">
+                                        <input class="form-check-input" type="radio" name="outputFormat" id="formatImg" value="img" checked>
+                                        <label class="form-check-label" for="formatImg">
+                                            Etiqueta HTML <code>&lt;img&gt;</code>
+                                        </label>
+                                    </div>
+                                    <div class="form-check">
+                                        <input class="form-check-input" type="radio" name="outputFormat" id="formatBase64" value="base64">
+                                        <label class="form-check-label" for="formatBase64">
+                                            Solo cadena Base64 (Data URL)
+                                        </label>
+                                    </div>
+                                    <div class="form-check">
+                                        <input class="form-check-input" type="radio" name="outputFormat" id="formatCss" value="css">
+                                        <label class="form-check-label" for="formatCss">
+                                            Para CSS <code>background-image</code>
+                                        </label>
+                                    </div>
+                                </div>
+
+                                <div class="mb-3 flex-grow-1 d-flex flex-column">
+                                    <label for="outputCode" class="form-label">Código:</label>
+                                    <textarea class="form-control flex-grow-1" id="outputCode" rows="8" readonly></textarea>
+                                </div>
+
+                                <div class="d-flex flex-wrap gap-2 mt-auto">
+                                    <button class="btn btn-secondary" id="copyButton" type="button">
+                                        <i class="bi bi-clipboard"></i><span class="icon-label">Copiar</span>
+                                    </button>
+                                    <button class="btn btn-primary" id="downloadButton" type="button">
+                                        <i class="bi bi-download"></i><span class="icon-label">Descargar</span>
+                                    </button>
+                                    <button class="btn btn-danger" id="clearButton" type="button">
+                                        <i class="bi bi-trash"></i><span class="icon-label">Limpiar</span>
+                                    </button>
+                                </div>
+                            </div>
+                            <!-- Placeholder when no image is loaded -->
+                            <div id="outputPlaceholder">
+                                <span>Selecciona una imagen para generar el código.</span>
+                            </div>
+                        </div><!-- End card-body -->
+                    </div> <!-- End card -->
+                </div> <!-- End Output Column -->
+            </div> <!-- End row -->
+        </main>
+
+        <footer class="text-center mt-5 pt-3">
+            <p>&copy; 2025 Conversor Base64</p>
+        </footer>
+    </div> <!-- End container -->
+
+    <!-- Embedded Bootstrap 5.3 JS Bundle (or link) -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js" integrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz" crossorigin="anonymous"></script>
+
+    <!-- Custom JavaScript -->
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            // --- DOM Element References ---
+            const htmlElement = document.documentElement;
+            const themeSwitcher = document.getElementById('themeSwitcher');
+            const dropzone = document.getElementById('dropzone');
+            const fileInput = document.getElementById('fileInput');
+            const loadingSpinner = document.getElementById('loadingSpinner');
+            const errorAlert = document.getElementById('errorAlert');
+            const errorMessage = document.getElementById('errorMessage');
+            const imageDetailsSection = document.getElementById('imageDetails');
+            const imagePreviewContainer = document.getElementById('imagePreviewContainer');
+            const imagePreview = document.getElementById('imagePreview');
+            const fileNameEl = document.getElementById('fileName');
+            const fileTypeEl = document.getElementById('fileType');
+            const fileSizeEl = document.getElementById('fileSize');
+            const fileDimensionsEl = document.getElementById('fileDimensions');
+            const base64SizeEl = document.getElementById('base64Size');
+            const outputSection = document.getElementById('outputSection');
+            const outputPlaceholder = document.getElementById('outputPlaceholder');
+            const inputPlaceholder = document.getElementById('inputPlaceholder');
+            const outputCode = document.getElementById('outputCode');
+            const outputFormatRadios = document.querySelectorAll('input[name="outputFormat"]');
+            const copyButton = document.getElementById('copyButton');
+            const downloadButton = document.getElementById('downloadButton');
+            const clearButton = document.getElementById('clearButton');
+            const bodyElement = document.body;
+            const dropzoneContent = dropzone.querySelector('.dropzone-content'); // Reference to label
+
+            let currentBase64String = null;
+            let currentFileName = 'imagen';
+            let currentMimeType = 'image/png';
+
+            // --- Theme Switcher Logic ---
+            const sunIcon = '<i class="bi bi-sun-fill"></i>';
+            const moonIcon = '<i class="bi bi-moon-stars-fill"></i>';
+
+            const applyTheme = (theme) => {
+                htmlElement.setAttribute('data-bs-theme', theme);
+                themeSwitcher.innerHTML = theme === 'dark' ? moonIcon : sunIcon;
+                localStorage.setItem('theme', theme);
+            };
+
+            themeSwitcher.addEventListener('click', (e) => {
+                e.stopPropagation();
+                const currentTheme = htmlElement.getAttribute('data-bs-theme');
+                applyTheme(currentTheme === 'dark' ? 'light' : 'dark');
+            });
+
+            const savedTheme = localStorage.getItem('theme') || 'dark';
+            applyTheme(savedTheme);
+
+            // --- Helper Functions ---
+            const formatBytes = (bytes, decimals = 2) => {
+                if (!+bytes) return '0 Bytes'
+                const k = 1024;
+                const dm = decimals < 0 ? 0 : decimals;
+                const sizes = ['Bytes', 'KB', 'MB', 'GB', 'TB'];
+                const i = Math.floor(Math.log(bytes) / Math.log(k));
+                return `${parseFloat((bytes / Math.pow(k, i)).toFixed(dm))} ${sizes[i]}`
+            }
+
+            const showLoading = (show) => {
+                bodyElement.classList.toggle('is-loading', show);
+                loadingSpinner.style.display = show ? 'block' : 'none';
+
+                // Hide dropzone *content* (label) temporarily while loading
+                if (dropzoneContent) {
+                    dropzoneContent.style.opacity = show ? '0' : '1';
+                    dropzoneContent.style.visibility = show ? 'hidden' : 'visible';
+                }
+
+                if (show) {
+                    hideError();
+                    // Don't reset *everything* visually, just hide details/output
+                    imageDetailsSection.style.display = 'none';
+                    outputSection.style.display = 'none';
+                    outputPlaceholder.style.display = 'flex'; // Show placeholder during load
+                    // Keep body.image-loaded if it was already there, allows dropzone bg to stay none
+                } else {
+                     // Ensure output placeholder is hidden if output should be shown later
+                     if (bodyElement.classList.contains('image-loaded')) {
+                        outputPlaceholder.style.display = 'none';
+                        outputSection.style.display = 'flex';
+                     }
+                }
+            };
+
+            const showError = (message) => {
+                errorMessage.textContent = message;
+                errorAlert.style.display = 'block';
+                bodyElement.classList.remove('is-loading');
+                showLoading(false); // Ensure spinner and content hiding are reverted
+                // Reset to a state where a new image can be uploaded
+                resetOutputAndDetails(false); // Don't reset body class, keep dropzone appearance
+                inputPlaceholder.style.display = 'none'; // Hide placeholder if error occurred after load
+                // If no image was ever loaded, the input placeholder might need to be reshown
+                 if (!bodyElement.classList.contains('image-loaded')) {
+                     inputPlaceholder.style.display = 'block';
+                 }
+            };
+
+            const hideError = () => {
+                errorAlert.style.display = 'none';
+            };
+
+            // Modified reset: Takes optional flag to reset body class
+             const resetOutputAndDetails = (resetBodyClass = true) => {
+                 outputSection.style.display = 'none';
+                 outputPlaceholder.style.display = 'flex';
+                 imageDetailsSection.style.display = 'none';
+                 imagePreview.src = '';
+                 imagePreview.alt = '';
+                 outputCode.value = '';
+                 currentBase64String = null;
+                 if (resetBodyClass) {
+                     bodyElement.classList.remove('image-loaded');
+                     inputPlaceholder.style.display = 'block'; // Show input placeholder only on full clear
+                 }
+             };
+
+            const resetUI = () => {
+                fileInput.value = null; // Clear file input selection
+                currentFileName = 'imagen';
+                hideError();
+                bodyElement.classList.remove('is-loading'); // Ensure loading class is off
+                showLoading(false); // Hide spinner, show dropzone content
+                resetOutputAndDetails(true); // Full reset including body class
+
+                // Reset button states
+                copyButton.innerHTML = '<i class="bi bi-clipboard"></i><span class="icon-label">Copiar</span>';
+                copyButton.className = 'btn btn-secondary'; // Reset to default classes
+
+                document.getElementById('formatImg').checked = true;
+                // Ensure dropzone prompt is visible again (handled by showLoading(false))
+            };
+
+
+            // --- File Handling Logic ---
+            const handleFile = (file) => {
+                if (!file) {
+                    fileInput.value = null;
+                    return;
+                }
+
+                const acceptedTypes = ['image/png', 'image/jpeg', 'image/gif', 'image/svg+xml', 'image/webp'];
+                if (!acceptedTypes.includes(file.type)) {
+                    showError(`Tipo de archivo no soportado: "${file.name}". Soportados: PNG, JPG, GIF, SVG, WEBP.`);
+                    fileInput.value = null;
+                    return;
+                }
+
+                hideError();
+                showLoading(true); // Start loading state
+
+                currentFileName = file.name.split('.').slice(0, -1).join('.') || 'imagen';
+                currentMimeType = file.type;
+
+                const reader = new FileReader();
+
+                reader.onloadend = () => {
+                    fileInput.value = null; // Reset input AFTER read complete
+
+                    if (reader.error) {
+                        showLoading(false);
+                        showError(`Error al leer el archivo: ${reader.error.message}`);
+                        return;
+                    }
+
+                    currentBase64String = reader.result;
+
+                    const img = new Image();
+                    img.onload = () => {
+                        showLoading(false); // End loading state
+
+                        // Update Details
+                        fileNameEl.textContent = file.name;
+                        fileTypeEl.textContent = file.type;
+                        fileSizeEl.textContent = formatBytes(file.size);
+                        base64SizeEl.textContent = formatBytes(currentBase64String.length);
+                        fileDimensionsEl.textContent = `${img.naturalWidth} x ${img.naturalHeight} px`;
+
+                        // Update Preview
+                        imagePreview.src = currentBase64String;
+                        imagePreview.alt = `Vista previa de ${file.name}`;
+
+                        // Show sections and update state
+                        imageDetailsSection.style.display = 'block';
+                        outputSection.style.display = 'flex'; // Use flex for correct layout
+                        outputPlaceholder.style.display = 'none';
+                        inputPlaceholder.style.display = 'none'; // Hide input placeholder
+                        bodyElement.classList.add('image-loaded'); // Add state class (used for hiding placeholder & dropzone icon)
+                        updateOutput(); // Generate initial output
+                    };
+                     img.onerror = () => {
+                         showLoading(false);
+                         showError('No se pudo cargar la vista previa o leer las dimensiones.');
+                         // Keep dropzone active, don't fully reset UI unless clear is clicked
+                     };
+                    img.src = currentBase64String; // Start loading image for dimensions/preview
+                };
+
+                reader.onerror = (error) => {
+                     fileInput.value = null; // Reset input on error too
+                     showLoading(false);
+                     showError(`Error (FileReader): ${error.message}`);
+                 };
+
+                reader.readAsDataURL(file);
+            };
+
+            // --- Drag and Drop Event Listeners ---
+            dropzone.addEventListener('dragover', (event) => {
+                event.preventDefault();
+                dropzone.classList.add('drag-over');
+            });
+
+            dropzone.addEventListener('dragleave', () => {
+                dropzone.classList.remove('drag-over');
+            });
+
+            dropzone.addEventListener('drop', (event) => {
+                event.preventDefault();
+                dropzone.classList.remove('drag-over');
+                const files = event.dataTransfer.files;
+                if (files.length > 0) {
+                    handleFile(files[0]); // Process the dropped file
+                }
+            });
+
+            // --- File Input Change Listener ---
+            fileInput.addEventListener('change', (event) => {
+                const files = event.target.files;
+                 if (files && files.length > 0) {
+                     handleFile(files[0]); // Process the selected file
+                 } else {
+                     // Handle cancellation if needed, though usually just do nothing
+                     fileInput.value = null; // Reset if selection window was cancelled
+                 }
+            });
+
+            // --- Output Format Change Listener ---
+            outputFormatRadios.forEach(radio => {
+                radio.addEventListener('change', updateOutput);
+            });
+
+            function updateOutput() {
+                if (!currentBase64String) return;
+
+                const selectedFormat = document.querySelector('input[name="outputFormat"]:checked').value;
+                let output = '';
+                let downloadFilename = `${currentFileName}_base64`;
+                let downloadMime = 'text/plain';
+
+                switch(selectedFormat) {
+                    case 'img':
+                        output = `<img src="${currentBase64String}" alt="${currentFileName}">`;
+                        downloadFilename += '.html';
+                        downloadMime = 'text/html';
+                        break;
+                    case 'base64':
+                        output = currentBase64String;
+                        downloadFilename += '.txt';
+                        break;
+                    case 'css':
+                        output = `background-image: url("${currentBase64String}");`;
+                         downloadFilename += '.css';
+                         downloadMime = 'text/css';
+                        break;
+                }
+                outputCode.value = output;
+                // Update data attributes for download button
+                 downloadButton.dataset.filename = downloadFilename;
+                 downloadButton.dataset.mimetype = downloadMime;
+            }
+
+            // --- Button Actions ---
+            copyButton.addEventListener('click', () => {
+                if (!outputCode.value || !currentBase64String) return; // Check if there's content
+
+                navigator.clipboard.writeText(outputCode.value)
+                    .then(() => {
+                        const originalTextHTML = copyButton.innerHTML; // Store full HTML
+                        const originalClasses = copyButton.className;
+                         copyButton.innerHTML = '<i class="bi bi-check-lg"></i><span class="icon-label">Copiado!</span>';
+                        copyButton.className = 'btn btn-success'; // Change to success visual cue
+                        setTimeout(() => {
+                            copyButton.innerHTML = originalTextHTML; // Restore original HTML
+                            copyButton.className = originalClasses; // Restore original classes
+                        }, 2000);
+                    })
+                    .catch(err => {
+                        console.error('Error al copiar: ', err);
+                        // Provide feedback in the UI instead of just console
+                        const originalTextHTML = copyButton.innerHTML;
+                        const originalClasses = copyButton.className;
+                        copyButton.innerHTML = '<i class="bi bi-x-octagon-fill"></i><span class="icon-label">Error</span>';
+                        copyButton.className = 'btn btn-danger'; // Error visual cue
+                         setTimeout(() => {
+                             copyButton.innerHTML = originalTextHTML;
+                             copyButton.className = originalClasses;
+                         }, 2500);
+                        // Optionally show a more persistent error using the alert mechanism
+                        // showError('No se pudo copiar al portapapeles.');
+                    });
+            });
+
+            downloadButton.addEventListener('click', () => {
+                if (!outputCode.value || !currentBase64String) return;
+
+                const filename = downloadButton.dataset.filename || 'base64_output.txt';
+                const mimeType = downloadButton.dataset.mimetype || 'text/plain';
+                const content = outputCode.value;
+
+                const blob = new Blob([content], { type: mimeType });
+                const url = URL.createObjectURL(blob);
+                const a = document.createElement('a');
+
+                a.href = url;
+                a.download = filename;
+                document.body.appendChild(a); // Required for Firefox
+                a.click();
+                document.body.removeChild(a); // Clean up
+                URL.revokeObjectURL(url); // Free up memory
+            });
+
+            clearButton.addEventListener('click', resetUI); // Reset the entire interface
+
+            // --- Initial Setup ---
+            resetUI(); // Ensure a clean state when the page loads
+
+        });
+    </script>
+</body>
+</html>
